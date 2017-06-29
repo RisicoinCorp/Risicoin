@@ -29,12 +29,8 @@ $app->get('/index.html', function(Req $req, Res $res) {
 
 $app->get('/', function(Req $req, Res $res) {
 
-	require_once('../view/index.php');
+	require_once('../view/readmail.php');
 
-});
-
-$app->post('/index.php', function(Req $req, Res $res) {
-	var_dump($_POST);
 });
 
 //Lancement routage
