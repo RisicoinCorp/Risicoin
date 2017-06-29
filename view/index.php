@@ -33,6 +33,20 @@
   <script src="plugins/flot/jquery.flot.resize.min.js"></script>
 
   <script>
+    /**
+     * Appelle un modal avec paramètres dont warning/success
+     */
+    function callmodal(type, title, body) {
+      if(type == "warning") {
+        $("#call-warning").removeClass("modal-success").addClass("modal-warning");
+      } else if(type == "success") {
+        $("#call-warning").removeClass("modal-warning").addClass("modal-success");
+      }
+      $("#call-warning .modal-title").text(title);
+      $("#call-warning .modal-body").text(body);
+      $("#call-warning").modal("show");
+    }
+
     $(function () {
       //éditeur WYSIHTML5 pour mails
       $("#compose-textarea").wysihtml5();
@@ -42,14 +56,71 @@
         var objet = $("#objetmail").val(); 
         var to = $("#pseudomail").val();
         var text = $("#compose-textarea").val();
-    
-        $.post("index.php", {
-          objet:objet,
-          to:to,
-          text:text
-        }/*, function(data) {
-            alert(data);
-        }*/);
+
+        if(objet == "" || to == "" || text == "") {
+          callmodal("warning", "Erreur dans la rédaction", "Veuillez entrer un objet, un destinataire et un texte.");
+        } else {
+          //TODO
+          /*
+          $.post("index.php", {
+            post: "submitmail",
+            objet: objet,
+            to: to,
+            text: text
+          });
+          
+          envoi ajax page + csrf
+          réponse si erreur modal warning
+          sinon modal success
+          */
+        }
+      });
+
+      //Delete account
+      $("#confirm-delete").click(function() {
+        var pass = $("#pass-delete-account").val();
+        if(pass == "") {
+          callmodal("warning", "Erreur", "Veuillez entrer votre mot de passe");
+        } else {
+          // TODO
+          /*
+          envoi ajax sans oublier token csrf
+          réponse si erreur modal warning
+          sinon modal success puis cliquer confirmer puis recharger page (déconnexion)
+          */
+        }
+      });
+
+      //Change pass
+      $("#changepassbutton").click(function() {
+        var input1 = $("#changepass").val(),
+            input2 = $("#changepassnew").val(),
+            input3 = $("#validformchange").val();
+
+        if(input1 == "" || input2 == "" || input3 == "") {
+          callmodal("warning", "Erreur", "Veuillez entrer votre mot de passe actuel, le nouveau et une confirmation du nouveau.");
+        } else if(input2!=input3) {
+          callmodal("warning", "Erreur", "Le nouveau mot de passe et la confirmation doivent être similaires.");
+        } else {
+          //TODO
+        }
+      });
+
+      //Change profile
+      $("#changeprofile").click(function(e) {
+        e.preventDefault();
+
+        var input1 = $("#changemail").val(),
+            input2 = $("#changepaypal").val(),
+            input3 = $("#changetextprofile").val(),
+            input4 = $("#changeavatar").val();
+
+        if(input1 == "") {
+          callmodal("warning", "Erreur", "Vous devez entrer votre adresse mail !");
+          //Le reste n'est pas nécessaire
+        } else {
+          //TODO
+        }
       });
 
       //Flot chart
@@ -110,12 +181,11 @@
           show: true,
           mode: "time",
           dayNames: ["dim", "lun", "mar", "mer", "jeu", "ven", "sam"],
-          monthNames: ["jan", "fév", "mar", "avr", "mai", "ju", "jui", "aoû", "sep", "oct", "nov", "déc"]
+          monthNames: ["jan", "fév", "mar", "avr", "mai", "juin", "juil", "aoû", "sep", "oct", "nov", "déc"]
         }
       };
 
       var interactive_plot = $.plot("#lastvisits", [data], options);
-
     });
   </script>
 
@@ -322,9 +392,9 @@
             <div class="box-body">
               <form role="form">
                 <div class="input-group">
-                  <input class="form-control" placeholder="Entrez votre mot de passe actuel" type="password">
+                  <input class="form-control" id="pass-delete-account" placeholder="Entrez votre mot de passe actuel" type="password">
                   <div class="input-group-btn">
-                    <button type="button" class="btn btn-danger">Envoyer</button>
+                    <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#accout-delete">Envoyer</button>
                   </div>
                 </div>
                 <p class="help-block">Cette action est irréversible</p>
@@ -347,7 +417,7 @@
                 </div>
                 <div class="form-group">
                   <label for="changepaypal"><img src="dist/img/credit/paypal2.png" alt="Paypal"> Adresse Paypal</label>
-                  <input class="form-control disabled" disabled id="changepaypal" placeholder="En contruction" type="email">
+                  <input class="form-control" id="changepaypal" placeholder="Entrez votre adresse Paypal" type="email">
                   <p class="help-block">Pour demander un virement</p>
                 </div>
                 <div class="form-group">
@@ -371,7 +441,7 @@
               </div>
 
               <div class="box-footer text-center">
-                <button type="submit" class="btn btn-primary-orange ">Valider</button>
+                <button type="submit" class="btn btn-primary-orange" id="changeprofile">Valider</button>
               </div>
             </form>
             <!-- end form -->
@@ -399,7 +469,7 @@
               </div>
 
               <div class="box-footer text-center">
-                <button type="submit" class="btn btn-primary-orange ">Valider</button>
+                <button type="button" class="btn btn-primary-orange" id="changepassbutton">Valider</button>
               </div>
             </form>
             <!-- end form -->
@@ -411,7 +481,7 @@
         <div class="col-xs-12">
           <div class="box box-primary-orange">
             <div class="box-header with-border">
-              <i class="fa fa-bar-chart-o"></i> <h3 class="box-title">Graphique des dernières visites</h3>
+              <i class="fa fa-bar-chart-o"></i> <h3 class="box-title">Dernières visites <small>Visites en fonction de la date</small></h3>
             </div>
             <div class="box-body">
               <div id="lastvisits" style="height: 300px;"></div>
@@ -421,7 +491,7 @@
       </div>
       <!-- fin bloc profil-->
 
-      <h2 class="page-header">
+      <h2 class="page-header margin-top">
         <a href="#mp" id="mp">Messagerie</a>
       </h2>
 
@@ -526,7 +596,7 @@
               <div class="box-footer">
                 <div class="row">
                   <div class="col-md-2 col-md-offset-10">
-                    <button type="submit" id="submitmail" class="btn btn-primary-orange"><i class="fa fa-envelope-o"></i> Envoyer</button>
+                    <button type="button" id="submitmail" class="btn btn-primary-orange"><i class="fa fa-envelope-o"></i> Envoyer</button>
                   </div>
                 </div>
               </div>
@@ -537,6 +607,41 @@
           <!-- /.col -->
         </div>
         <!-- /.row fin bloc envoi message -->
+
+        <div class="modal modal-danger fade" id="accout-delete">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h4 class="modal-title">Supprimer le compte</h4>
+              </div>
+              <div class="modal-body">
+                <p>Êtes-vous sûr de supprimer votre compte ?<br />Cette action ne peut être annulée.</p>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-outline pull-left" data-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-outline" id="confirm-delete" data-dismiss="modal">Confirmer</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- /.modal danger -->
+
+        <div class="modal modal-warning fade" id="call-warning">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title"></h4>
+              </div>
+              <div class="modal-body"></div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-outline" data-dismiss="modal">Continuer</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- /.modal calling -->
 
       </section>
 
